@@ -40,3 +40,10 @@ Abstracción de Inferencia: El VentenInferenceWrapper permite que el orquestador
 Gestión de Sesiones: La base de datos SQLite rastrea cada auditoría. Esto es el embrión de lo que será el Venten Dashboard en GCP.
 
 Seguridad de Credenciales: Utiliza auth.authenticate_user() de Google para que no tengas que escribir claves manuales en el código.
+
+
+# --- MÓDULO 4: ANALYTICS & COMPARATIVE REPORTING ---
+
+
+Venten Core v0.1: Framework de Auditoria Paralela para Modelos de Frontera
+Este bloque de código integra la arquitectura de persistencia, conectividad con Vertex AI y orquestación concurrente diseñada para el prototipado de venten.ai. Permite cuantificar el Security Decay Factor comparando múltiples modelos de forma simultánea.
