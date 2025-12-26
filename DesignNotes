@@ -53,3 +53,13 @@ Para transformar el prototipo de un escáner estático en una plataforma de inte
 
 Esta capacidad es fundamental para el Scientific Advisor, ya que permite realizar análisis forense sobre por qué falló una mitigación específica o cómo se estructuró el bypass exitoso.
 
+Análisis de Valor para Venten.ai
+Detección de Regresión de Seguridad: Al almacenar los logs, podemos comparar si una actualización del modelo (ej. de Gemini 1.0 a 1.5) ha introducido nuevas vulnerabilidades ante los mismos prompts de ataque.
+
+Análisis de Falsos Negativos: Muchas veces el modelo no responde con contenido nocivo, pero revela información sobre sus instrucciones de sistema (System Prompt Leakage). Estos logs permiten auditar esas fugas de información.
+
+Evidencia de Auditoría: Para clientes corporativos, el reporte PDF no es suficiente; requieren los logs crudos de las interacciones para sus equipos de cumplimiento y gestión de riesgos.
+
+Este sistema de logs es el primer paso para construir un Clasificador Adversario Automático.  implementemos una función que utilice un modelo pequeño (como Gemini Flash) para categorizar automáticamente las respuestas en los logs como "Segura", "Bypass Exitoso" o "Fuga de Información"
+
+
