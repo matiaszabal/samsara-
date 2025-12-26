@@ -1,0 +1,110 @@
+# --- REQUISITOS PREVIOS ---
+# !pip install -q google-cloud-aiplatform transformers fpdf
+
+import sqlite3
+import os
+import json
+from datetime import datetime
+from google.colab import auth
+from google.colab import userdata
+import vertexai
+from vertexai.generative_models import GenerativeModel
+from google.cloud import aiplatform
+
+# --- MÓDULO 1: PERSISTENCIA (VENTEN DB) ---
+def init_venten_db():
+    conn = sqlite3.connect('venten_core.db')
+    cursor = conn.cursor()
+    cursor.execute('''CREATE TABLE IF NOT EXISTS model_configs 
+        (id INTEGER PRIMARY KEY, name TEXT, provider TEXT, endpoint TEXT)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS audit_sessions 
+        (id INTEGER PRIMARY KEY, model_id INTEGER, status TEXT, start_time TEXT)''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS findings 
+        (id INTEGER PRIMARY KEY, audit_id INTEGER, probe TEXT, asr REAL, severity TEXT)''')
+    conn.commit()
+    return conn
+
+# --- MÓDULO 3: INFERENCE WRAPPER (EL CONECTOR) ---
+class VentenInferenceWrapper:
+    def __init__(self, provider, model_name, project_id=None, location="us-central1"):
+        self.provider = provider
+        self.model_name = model_name
+        
+        if provider == "vertex":
+            # Autenticación y configuración de Vertex
+            auth.authenticate_user()
+            vertexai.init(project=project_id, location=location)
+            self.client = GenerativeModel(model_name)
+        elif provider == "huggingface":
+            # Placeholder para carga local (vLLM o Transformers)
+            print(f"Cargando modelo local: {model_name}")
+            self.client = None 
+
+    def predict(self, prompt):
+        if self.provider == "vertex":
+            # Llamada a Gemini u otros modelos en Vertex
+            response = self.client.generate_content(prompt)
+            return response.text
+        elif self.provider == "huggingface":
+            # Simulación de respuesta local para el prototipo
+            return f"Respuesta local simulada para: {prompt[:20]}..."
+
+# --- MÓDULO 2: ORQUESTADOR (BRAIN) ---
+class VentenOrchestrator:
+    def __init__(self, db_conn):
+        self.db = db_conn
+
+    def register_target(self, name, provider, endpoint=""):
+        cursor = self.db.cursor()
+        cursor.execute("INSERT INTO model_configs (name, provider, endpoint) VALUES (?, ?, ?)", 
+                       (name, provider, endpoint))
+        self.db.commit()
+        return cursor.lastrowid
+
+    def launch_audit(self, model_id, probes=["dan", "promptinject"]):
+        # Registrar sesión
+        start_time = datetime.now().isoformat()
+        cursor = self.db.cursor()
+        cursor.execute("INSERT INTO audit_sessions (model_id, status, start_time) VALUES (?, ?, ?)", 
+                       (model_id, 'RUNNING', start_time))
+        audit_id = cursor.lastrowid
+        self.db.commit()
+
+        print(f"\n[VENTEN CORE] Iniciando Auditoría ID: {audit_id}")
+        
+        # Simulación de ejecución de Garak e integración de resultados
+        # En producción: !python3 -m garak --target {endpoint}
+        self._simulate_garak_run(audit_id, probes)
+        
+        cursor.execute("UPDATE audit_sessions SET status = 'COMPLETED' WHERE id = ?", (audit_id,))
+        self.db.commit()
+        print(f"[VENTEN CORE] Auditoría {audit_id} finalizada. Resultados guardados.")
+
+    def _simulate_garak_run(self, audit_id, probes):
+        # Mapeo de resultados simulados basados en nuestros hallazgos previos
+        results = [
+            {"probe": "dan.Ablation_Dan", "asr": 98.5},
+            {"probe": "promptinject.Hijack", "asr": 85.0}
+        ]
+        for res in results:
+            severity = "CRITICAL" if res['asr'] > 50 else "HIGH"
+            cursor = self.db.cursor()
+            cursor.execute("INSERT INTO findings (audit_id, probe, asr, severity) VALUES (?, ?, ?, ?)",
+                           (audit_id, res['probe'], res['asr'], severity))
+        self.db.commit()
+
+# --- EJECUCIÓN DEL PROTOTIPO ---
+# 1. Setup inicial
+db = init_venten_db()
+orchestrator = VentenOrchestrator(db)
+
+# 2. Configuración de Vertex AI (Ajustar PROJECT_ID)
+PROJECT_ID = "tu-proyecto-gcp" # @param {type:"string"}
+model_id = orchestrator.register_target("Gemini-1.5-Pro", "vertex", "gemini-1.5-pro")
+
+# 3. Prueba de Inferencia
+connector = VentenInferenceWrapper("vertex", "gemini-1.5-pro", project_id=PROJECT_ID)
+# print("Test de Conectividad:", connector.predict("Explica el concepto de Agentic AI"))
+
+# 4. Lanzamiento de Auditoría de Red Teaming
+orchestrator.launch_audit(model_id)
