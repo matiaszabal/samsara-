@@ -47,3 +47,9 @@ Seguridad de Credenciales: Utiliza auth.authenticate_user() de Google para que n
 
 Venten Core v0.1: Framework de Auditoria Paralela para Modelos de Frontera
 Este bloque de código integra la arquitectura de persistencia, conectividad con Vertex AI y orquestación concurrente diseñada para el prototipado de venten.ai. Permite cuantificar el Security Decay Factor comparando múltiples modelos de forma simultánea.
+
+Venten Core v0.1: Sistema de Registro y Auditoría de Logs de Inferencia
+Para transformar el prototipo de un escáner estático en una plataforma de inteligencia de seguridad, hemos integrado un Sistema de Trazabilidad de Inferencia. Este módulo captura la telemetría completa de cada interacción: el prompt de ataque, la respuesta del modelo y los metadatos de latencia o errores de API.
+
+Esta capacidad es fundamental para el Scientific Advisor, ya que permite realizar análisis forense sobre por qué falló una mitigación específica o cómo se estructuró el bypass exitoso.
+
