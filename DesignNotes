@@ -1,0 +1,34 @@
+PROTOTIPO FUNCIONAL DE VENTEN CORE EN GOOGLE COLAB
+
+El uso de Google Colab como entorno de prototipado es la estrategia técnica más eficiente para validar la lógica de orquestación antes de la migración a GKE y Cloud SQL. En esta fase, sustituiremos los servicios pesados de GCP por equivalentes ligeros en Python que permitan iterar sobre el framework de Red Teaming Agéntico.
+
+ESTRUCTURA DEL PROTOTIPO (MODULAR)
+
+Para que el código sea transferible a producción, dividiremos el prototipo en tres módulos core:
+
+VENTEN DATABASE (MOCK) En lugar de Cloud SQL, utilizaremos SQLite en el entorno local de Colab. Esto permite definir el esquema de datos y las relaciones entre modelos, auditorías y vulnerabilidades detectadas de forma persistente durante la sesión.
+
+THE ORCHESTRATOR (BRAIN) Una clase en Python que gestionará el ciclo de vida de la auditoría. Su función es recibir la configuración del objetivo, instanciar el motor de ataque (Garak) y capturar los logs en tiempo real para poblar la base de datos.
+
+INFERENCE WRAPPER Un componente que abstrae la complejidad de la conexión. Debe ser capaz de hablar con modelos locales (Hugging Face) o remotos (Vertex AI via API) de forma indistinta.
+
+IMPLEMENTACIÓN TÉCNICA DEL MVP EN COLAB
+
+Módulo 1: Inicialización de la Base de Datos
+
+Módulo 2: El Orquestador de Red Teaming
+
+Módulo 3 para que el prototipo pueda conectarse automáticamente a Vertex AI y así probar la robustez de los modelos de Google (Gemini/Llama en Vertex) desde el orquestador de Venten
+
+VENTAJAS DEL PROTOTIPO EN COLAB
+
+Aislamiento de Lógica: Permite depurar el código de análisis de vulnerabilidades sin preocuparse por la latencia de red o los permisos de IAM en GCP.
+
+Validación del Framework Agéntico: Podemos empezar a programar las "Custom Probes" que mencionaste en BSidesTLV (ataques a memoria y herramientas) y probarlas directamente contra modelos de Hugging Face en la misma celda.
+
+Preparación para Producción: Una vez que el flujo SQLite -> Orchestrator -> Garak funciona, el paso a Cloud SQL y FastAPI es casi directo, ya que la lógica de negocio ya estará escrita y testeada.
+
+Este prototipo funcional integra la persistencia de datos (SQLite), la orquestación de tareas y el Inference Wrapper diseñado para interactuar tanto con modelos locales como con Vertex AI en Google Cloud.
+
+Prototipo Venten Core v0.1 (Colab Edition)
+
