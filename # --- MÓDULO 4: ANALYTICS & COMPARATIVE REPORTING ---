@@ -1,0 +1,68 @@
+# --- MÓDULO 4: ANALYTICS & COMPARATIVE REPORTING ---
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def get_comparative_metrics(db_conn):
+    """
+    Extrae y consolida los resultados de auditoría para analizar el Security Decay Factor.
+    Cruza configuraciones de modelos, sesiones de auditoría y hallazgos técnicos.
+    """
+    query = """
+    SELECT 
+        m.name AS Model,
+        m.provider AS Provider,
+        f.probe AS Probe,
+        f.asr AS "ASR (%)",
+        f.severity AS Severity,
+        a.start_time AS "Audit_Date"
+    FROM findings f
+    JOIN audit_sessions a ON f.audit_id = a.id
+    JOIN model_configs m ON a.model_id = m.id
+    ORDER BY f.asr DESC
+    """
+    df = pd.read_sql_query(query, db_conn)
+    return df
+
+def plot_security_decay(df):
+    """
+    Genera una comparativa visual del Attack Success Rate (ASR) entre modelos.
+    Permite identificar visualmente qué arquitecturas son más vulnerables al mismo ataque.
+    """
+    if df.empty:
+        print("No hay datos suficientes para generar la comparativa.")
+        return
+
+    plt.figure(figsize=(12, 6))
+    sns.set_style("whitegrid")
+    
+    # Visualización por Modelo y Sonda
+    ax = sns.barplot(x="Model", y="ASR (%)", hue="Probe", data=df, palette="viridis")
+    
+    plt.title('Security Decay Factor Analysis: Comparative ASR by Model Architecture', fontsize=14, fontweight='bold')
+    plt.ylim(0, 105)
+    plt.ylabel('Attack Success Rate (%)')
+    plt.legend(title='Vulnerability Probe', bbox_to_anchor=(1.05, 1), loc='upper left')
+    
+    # Etiquetas de datos
+    for p in ax.patches:
+        ax.annotate(f'{p.get_height():.1f}%', 
+                   (p.get_x() + p.get_width() / 2., p.get_height()), 
+                   ha='center', va='center', xytext=(0, 9), 
+                   textcoords='offset points', fontsize=9, fontweight='bold')
+
+    plt.tight_layout()
+    plt.show()
+
+# --- INTEGRACIÓN EN EL WORKFLOW ---
+# 1. Ejecutar múltiples auditorías (Simulación para la comparativa)
+m2_id = orchestrator.register_target("Mistral-7B-v0.3", "huggingface", "mistralai/Mistral-7B-v0.3")
+orchestrator.launch_audit(m2_id)
+
+# 2. Obtener Reporte Comparativo
+report_df = get_comparative_metrics(db)
+
+# 3. Visualización y Análisis
+print("\n--- VENTEN CORE: COMPARATIVE SECURITY REPORT ---")
+print(report_df.to_string(index=False))
+plot_security_decay(report_df)
