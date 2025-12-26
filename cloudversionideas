@@ -1,0 +1,35 @@
+VENTEN CORE: ARQUITECTURA DE ORQUESTACIÓN EN GOOGLE CLOUD PLATFORM (GCP)
+
+La implementación de la plataforma Venten Core en GCP se fundamenta en una arquitectura nativa de la nube diseñada para el aislamiento de cargas de trabajo adversarias y la escalabilidad de inferencia de gran escala (405B+).
+
+INFRAESTRUCTURA DE CÓMPUTO Y ORQUESTACIÓN
+
+Google Kubernetes Engine (GKE) Autopilot: El núcleo de la plataforma reside en GKE. Se utilizarán Node Pools específicos equipados con GPUs NVIDIA A100 (80GB) y H100 para la ejecución de sondas sobre modelos locales y cuantizados. La orquestación mediante Kubernetes permite el aislamiento total de los entornos de ataque, garantizando que una vulnerabilidad explotada en un agente no comprometa el plano de control.
+
+Cloud Pub/Sub: La gestión de las tareas de Red Teaming se realiza mediante un modelo de colas asíncronas. Cada solicitud de auditoría genera un mensaje en Pub/Sub que activa trabajadores especializados (Workers) en GKE. Este desacoplamiento permite procesar múltiples auditorías concurrentes y gestionar reintentos en caso de fallos de memoria (OOM) o de red.
+
+CAPA DE PERSISTENCIA Y DATOS (CLOUD SQL & FIRESTORE)
+
+Base de Datos Relacional (Cloud SQL - PostgreSQL): Almacena la estructura crítica de la plataforma. Tabla de Model_Configs: Registro de versiones, proveedores (Vertex AI, Hugging Face, In-House), niveles de cuantización y parámetros. Tabla de Audit_Sessions: Seguimiento de estados (PENDING, RUNNING, COMPLETED, FAILED) y metadatos de sesión. Tabla de Probe_Results: Almacenamiento de métricas ASR (Attack Success Rate), conteo de intentos y rutas hacia logs crudos. Tabla de Vulnerability_Findings: Registro detallado de vectores de ataque detectados y pasos de remediación sugeridos.
+
+Google Cloud Storage (GCS): Almacenamiento de artefactos pesados. Aquí se depositan los pesos de modelos locales, los archivos JSONL generados por Garak y los reportes PDF finales de Venten.ai.
+
+Firestore: Se utiliza para el monitoreo en tiempo real. Los logs de las sondas adversarias se transmiten a Firestore para proporcionar una visualización en vivo del progreso de la auditoría en el dashboard de Venten Core.
+
+ESQUEMA DE API (VENTEN API V1 - FASTAPI)
+
+La API actúa como el puente entre el Scientific Advisor y la infraestructura de ataque.
+
+Endpoints Principales:
+
+POST /audits/start: Inicia un nuevo ciclo de Red Teaming. Requiere configuración del objetivo, selección de sondas y política de seguridad. GET /audits/{id}/status: Recupera el estado operativo y las métricas preliminares en tiempo real. GET /reports/{id}/download: Genera y devuelve el reporte técnico final en formato PDF. POST /connectors/register: Configura un nuevo punto de acceso de inferencia (Vertex AI Endpoint o Local vLLM).
+
+SEGURIDAD Y AISLAMIENTO (VPC & IAM)
+
+VPC Service Controls: Se establece un perímetro de seguridad para evitar la exfiltración de datos durante el proceso de Red Teaming. Los agentes de ataque operan en subredes aisladas con acceso restringido únicamente a los endpoints de inferencia autorizados. IAM Workload Identity: Permite que los pods de GKE se autentiquen de forma segura con Cloud Storage y Cloud SQL sin necesidad de gestionar claves estáticas, mitigando el riesgo de compromiso de credenciales dentro del clúster.
+
+LOGÍSTICA DE DESPLIEGUE
+
+Se recomienda la implementación mediante Terraform para garantizar la reproducibilidad del entorno tanto en la nube de Venten como en la VPC del cliente bajo el modelo de Venten Sidecar. Este esquema permite que las organizaciones retengan la soberanía sobre sus modelos mientras Venten Core gestiona la lógica de la auditoría.
+
+¿Desea que desarrolle el script inicial de FastAPI para la creación de auditorías o prefiere que detallemos el esquema de base de datos en SQL?
