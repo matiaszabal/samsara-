@@ -62,4 +62,16 @@ Evidencia de Auditoría: Para clientes corporativos, el reporte PDF no es sufici
 
 Este sistema de logs es el primer paso para construir un Clasificador Adversario Automático.  implementemos una función que utilice un modelo pequeño (como Gemini Flash) para categorizar automáticamente las respuestas en los logs como "Segura", "Bypass Exitoso" o "Fuga de Información"
 
+Análisis de Causas para el DataFrame Vacío
+Filtro Inadecuado: La función anterior get_failed_responses buscaba is_error = 0. Si Vertex AI devolvió un error de permisos o cuota, el log se guardó con is_error = 1 y no aparecía en el reporte.
+
+Configuración de GCP: En Colab, si el PROJECT_ID no es válido o la API de Vertex AI no está habilitada en ese proyecto, la llamada connector.predict() fallará siempre.
+
+Persistencia en Hilos: SQLite puede presentar bloqueos si se intenta leer mientras un hilo de auditoría aún está escribiendo. El uso de db_lock y check_same_thread=False en el bloque anterior soluciona este comportamiento.
+
+Siguiente Paso Estratégico
+Para profesionalizar este log, podemos implementar un Analizador de Rechazo. Si la respuesta del modelo está vacía o contiene un mensaje de "Safety Filter", el sistema debe categorizarlo no como un error técnico (is_error=1), sino como un Bloqueo de Seguridad Nativo.
+
+¿Desea que integremos el clasificador automático que analice el contenido de los logs para distinguir entre un fallo de red y una mitigación activa del modelo?
+
 
