@@ -32,3 +32,11 @@ Este prototipo funcional integra la persistencia de datos (SQLite), la orquestac
 
 Prototipo Venten Core v0.1 (Colab Edition)
 
+https://github.com/matiaszabal/samsara-/blob/main/Prototipo%20Venten%20Core%20v0.1%20(Colab%20Edition)
+
+Diferenciales del Prototipo en Colab
+Abstracción de Inferencia: El VentenInferenceWrapper permite que el orquestador no necesite saber si el modelo está en Vertex AI o corriendo localmente. Esto facilita el escalado a modelos de 405B en el futuro.
+
+Gestión de Sesiones: La base de datos SQLite rastrea cada auditoría. Esto es el embrión de lo que será el Venten Dashboard en GCP.
+
+Seguridad de Credenciales: Utiliza auth.authenticate_user() de Google para que no tengas que escribir claves manuales en el código.
