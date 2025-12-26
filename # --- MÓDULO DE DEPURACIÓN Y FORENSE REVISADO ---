@@ -1,0 +1,38 @@
+# --- MÓDULO DE DEPURACIÓN Y FORENSE REVISADO ---
+
+def get_all_inference_logs(db_conn, audit_id=None):
+    """
+    Extrae la totalidad de los logs de inferencia sin filtros de error.
+    Permite diagnosticar fallos de conectividad con Vertex AI.
+    """
+    query = "SELECT id, audit_id, timestamp, prompt, response, is_error FROM inference_logs"
+    if audit_id:
+        query += f" WHERE audit_id = {audit_id}"
+    
+    query += " ORDER BY timestamp DESC"
+    
+    df_logs = pd.read_sql_query(query, db_conn)
+    return df_logs
+
+# --- EJECUCIÓN DE DIAGNÓSTICO ---
+
+print("[VENTEN DEBUG] Verificando contenido crudo de la tabla inference_logs...")
+
+# 1. Recuperar todos los logs (incluyendo errores de API)
+full_logs_df = get_all_inference_logs(db_conn)
+
+if full_logs_df.empty:
+    print("CRÍTICO: La tabla está físicamente vacía. Verifique que 'orchestrator_live.execute_live_probe' se ejecutó.")
+else:
+    # Clasificación rápida de errores vs éxitos
+    exitos = len(full_logs_df[full_logs_df['is_error'] == 0])
+    errores = len(full_logs_df[full_logs_df['is_error'] == 1])
+    
+    print(f"Resumen de logs: {exitos} exitosos, {errores} errores detectados.\n")
+    print(full_logs_df.to_string(index=False))
+
+# --- OPTIMIZACIÓN DEL WRAPPER (ERROR HANDLING) ---
+
+# Si el response fue un error de Vertex (ej. 403 Permission Denied), 
+# el wrapper anterior devolvía un string que contenía "ERROR_INFERENCIA".
+# Asegúrate de haber configurado PROJECT_ID correctamente antes de ejecutar.
