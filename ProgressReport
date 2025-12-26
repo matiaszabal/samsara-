@@ -1,0 +1,33 @@
+Hasta el momento, hemos consolidado el MVP técnico de Venten.ai en un entorno de prototipado rápido (Google Colab), diseñado para escalar hacia Google Cloud Platform. Lo que hemos construido no es solo un escáner de prompts; es el motor de una plataforma de seguridad sistémica.
+
+Aquí el desglose de los activos técnicos que ya operan en nuestro "Venten Core":
+
+1. El Motor de Orquestación (Venten Core v0.1)
+Persistencia Forense: Una base de datos (SQLite) que registra cada sesión, configuración de modelo y hallazgo técnico. Nada queda en el aire; cada ataque tiene trazabilidad.
+
+Inference Wrapper Universal: Un conector agnóstico que permite auditar modelos en Vertex AI (Gemini, Llama-3.1-405B, Mistral) y modelos locales. Esto es clave para nuestra tesis de soberanía de datos.
+
+Escalabilidad Concurrente: Capacidad de ejecutar auditorías en paralelo, reduciendo drásticamente el tiempo de análisis de familias completas de modelos.
+
+2. Capa de Inteligencia y Clasificación
+Venten Security Classifier: Hemos implementado un "Juez" (basado en Gemini Flash) que categoriza automáticamente las respuestas en tiempo real.
+
+Taxonomía de Riesgo: El sistema ya distingue entre un error técnico, una mitigación exitosa (REFUSAL) y un compromiso real del sistema (SUCCESSFUL_BYPASS o SYSTEM_LEAK).
+
+Reporting de Grado Científico: Un generador de PDF que consolida métricas cuantitativas (ASR) con un análisis forense de los "Top Bypasses".
+
+¿Estamos haciendo Red Teaming para Agentic AI?
+Sí, pero desde un enfoque agéntico real, moviéndonos más allá de los jailbreaks de chat tradicionales. Siguiendo tu framework de BSidesTLV, nuestro Red Teaming actual en Venten.ai se enfoca en tres vectores críticos:
+
+Ataque a los "Músculos" (Tool Hijacking): Probamos si mediante inyecciones indirectas podemos forzar al agente a ejecutar herramientas (APIs, funciones) para las que no debería tener permiso. No nos importa si el modelo "dice algo malo", nos importa si el modelo "ejecuta algo crítico".
+
+Ataque a la "Memoria" (RAG Poisoning): Evaluamos cómo el agente procesa información recuperada de bases de datos vectoriales que contienen instrucciones maliciosas ocultas. Esto simula ataques persistentes que esperan a que el agente lea el dato "envenenado".
+
+Security Decay Factor (SDM): Analizamos cómo la eficiencia operativa (cuantización a 4 bits) erosiona las capas de razonamiento que mantienen el control del agente. Es el diferencial académico de Venten: cuantificar la pérdida de seguridad por optimización.
+
+Resumen de Situación
+Tenemos la infraestructura mínima viable para entrar a una empresa y decir: "No solo vamos a probar si tu chatbot es grosero; vamos a auditar si tu agente puede ser manipulado para ejecutar acciones no autorizadas en tu infraestructura de GCP".
+
+Lo que tenemos es una herramienta de diagnóstico de robustez operativa.
+
+¿Cuál sería el siguiente movimiento estratégico? ¿Te gustaría que diseñemos una "Sonda Agéntica Específica" que pruebe específicamente el Model Context Protocol (MCP) o el uso de herramientas externas, para llevar nuestro Red Teaming al nivel de "acción" que propusiste en Tel Aviv?
